@@ -1,0 +1,44 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore PlaywrightFramework.Tests/PlaywrightFramework.Tests.csproj
+
+      - name: Build
+        run: dotnet build PlaywrightFramework.Tests/PlaywrightFramework.Tests.csproj --no-restore
+
+      - name: Install Playwright browsers
+        run: pwsh PlaywrightFramework.Tests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: dotnet test PlaywrightFramework.Tests/PlaywrightFramework.Tests.csproj --logger "trx;LogFileName=TestResults.trx" --results-directory TestResults
+        env:
+          CI: "true"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ github.run_id }}
+          path: TestResults/
+          retention-days: 30
