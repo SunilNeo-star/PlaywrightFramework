@@ -2,6 +2,7 @@ using Microsoft.Playwright.NUnit;
 using NUnit.Framework;
 using PlaywrightFramework.Tests.Pages;
 
+
 [TestFixture]
 [Parallelizable(ParallelScope.Self)]
 public class HomePageTests : PageTest
